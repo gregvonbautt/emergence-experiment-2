@@ -7,6 +7,8 @@ type Simulation struct {
 
 func NewSimulation(n int, w, h float64) *Simulation {
 	elems := make([]Element, n)
+	elems[0].Velocity.X = 100
+	elems[0].Velocity.Y = 100
 	return &Simulation{Elements: elems, Width: w, Height: h}
 }
 

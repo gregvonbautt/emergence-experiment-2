@@ -7,7 +7,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 func Serve(addr string, snapshotChan chan *sim.Snapshot) error {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
