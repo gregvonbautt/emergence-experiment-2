@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	N := 1000
+	N := 10000
 	s := sim.NewSimulation(N, 100, 100)
 
 	// snapshot buffers
@@ -21,17 +21,27 @@ func main() {
 	// run streamer
 	go stream.Serve(":8080", snapshotChan)
 
-	ticker := time.NewTicker(time.Millisecond * 16) // ~60 FPS sim
-	for range ticker.C {
-		s.Step(0.016)
+	const delayMs = 10
+	const snapshotPeriod = 5
 
-		// every 10 steps, send snapshot
-		s.WriteSnapshot(current)
-		select {
-		case snapshotChan <- current:
-			current, next = next, current
-		default:
-			// drop frame if streamer is slow
+	cnt := 0
+
+	for {
+		s.Step(delayMs / 1000.0)
+
+		// write snapshot if needed
+		cnt++
+		if cnt >= snapshotPeriod {
+			cnt = 0
+			s.WriteSnapshot(current)
+			select {
+			case snapshotChan <- current:
+				current, next = next, current
+			default:
+				// drop frame if streamer is slow
+			}
 		}
+
+		time.Sleep(delayMs * time.Millisecond)
 	}
 }
